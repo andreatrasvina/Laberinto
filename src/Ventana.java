@@ -4,21 +4,56 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.util.ArrayList;
+
 
 public class Ventana extends JFrame implements KeyListener{
 
-    public int px=230;
-    public int py=230;
+    public int px=5;
+    public int py=5;
     int anteriorPx, anteriorPy;
+
+    ArrayList <Rect> paredes = new ArrayList<>();
+
+    private int[][] laberinto = {
+            {1, 1, 1, 1, 1, 1, 1, 1, 1, 1},
+            {1, 0, 0, 1, 0, 0, 0, 1, 0, 1},
+            {1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+            {1, 0, 0, 0, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+            {1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+            {1, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+            {1, 1, 1, 1, 0, 1, 1, 1, 0, 1},
+            {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+            {1, 0, 0, 1, 0, 0, 0, 1, 0, 1},
+            {1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+            {1, 0, 0, 0, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+            {1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+            {1, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+            {1, 1, 1, 1, 0, 1, 1, 1, 0, 1},
+            {1, 0, 0, 0, 0, 0, 0, 0, 0, 1},
+            {1, 0, 0, 1, 0, 0, 0, 1, 0, 1},
+            {1, 0, 0, 0, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 1, 0, 1, 0, 1, 0, 1},
+            {1, 0, 1, 0, 0, 0, 0, 1, 0, 1},
+            {1, 0, 1, 1, 1, 1, 0, 1, 0, 1},
+            {1, 0, 0, 0, 0, 1, 0, 0, 0, 1},
+            {1, 1, 1, 1, 0, 1, 1, 1, 0, 1},
+            {1, 0, 0, 0, 0, 0, 0, 0, 0, 1}
+    };
 
     public Ventana() {
         //PROPIEDADES VENTANA
-        this.setTitle("ROMPECABEZAS NUMERICO");
+        this.setTitle("LABERINTO");
         this.setSize(600,600);
         this.setLayout(new BorderLayout());
         this.setLocationRelativeTo(null);
         this.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         this.setVisible(true);
+        this.setResizable(false);
 
         addKeyListener(this);
 
@@ -44,6 +79,11 @@ public class Ventana extends JFrame implements KeyListener{
 
         btnReiniciar.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
+                px=5;
+                py=5;
+
+                repaint();
+                revalidate();
 
             }
         });
@@ -77,21 +117,20 @@ public class Ventana extends JFrame implements KeyListener{
         anteriorPx = px;
         anteriorPy = py;
 
-
         if(e.getKeyCode() == 87 && py > 0) {
-            py = py - 10;
+            py = py - 1;
             colision();
         }
         if(e.getKeyCode() == 83 && py < 430) {
-            py = py + 10;
+            py = py + 1;
             colision();
         }
         if(e.getKeyCode() == 65 && px > 0) {
-            px = px - 10;
+            px = px - 1;
             colision();
         }
         if(e.getKeyCode() == 68 && px < 460) {
-            px = px + 10;
+            px = px + 1;
             colision();
         }
 
@@ -110,13 +149,15 @@ public class Ventana extends JFrame implements KeyListener{
 
     public void colision(){
 
-        Rect r = new Rect(px, py, 20, 20, Color.black);
-        Rect p = new Rect(0,0,10,600, Color.blue);
+        Rect r = new Rect(px, py, 5, 5, Color.black);
 
-        if (r.colision(p)) {
+        for (Rect pared : paredes) {
+            if (r.colision(pared)) {
 
-            px = anteriorPx;
-            py = anteriorPy;
+                px = anteriorPx;
+                py = anteriorPy;
+                break;
+            }
         }
     }
 
@@ -127,14 +168,27 @@ public class Ventana extends JFrame implements KeyListener{
             super.paintComponent(g);
 
             //JUGADOR
-            Rect r = new Rect(px, py, 10, 10, Color.red);
+            Rect r = new Rect(px, py, 5, 5, Color.red);
             g.setColor(r.c);
             g.fillRect(r.x, r.y, r.w, r.h);
 
             //PAREDES
-            Rect p1 = new Rect(0, 0, 10, 500, Color.black);
-            g.setColor(p1.c);
-            g.fillRect(p1.x, p1.y, p1.w, p1.h);
+            for(int i = 0; i < laberinto.length; i++) {
+                for(int j = 0; j < laberinto[i].length; j++) {
+                    if(laberinto[i][j] == 1) {
+                        //CREA OBJETO RECT Y LO AGREGA AL ARRAY
+                        Rect pared = new Rect(j * 5, i * 5, 5, 5, Color.black);
+                        paredes.add(pared);
+                    }
+                }
+            }
+
+            //SE PINTAN PAREDES
+            for (Rect pared : paredes) {
+                g.setColor(pared.c);
+                g.fillRect(pared.x, pared.y, pared.w, pared.h);
+
+            }
 
         }
     }
